@@ -20,6 +20,7 @@
 		"@fastify/cors": "^10.1.0",
 		"axios": "^1.7.9",
 		"dotenv": "^16.4.7",
-		"fastify": "^5.2.1"
+		"fastify": "^5.2.1",
+		"stripe": "^17.7.0"
 	}
 }
