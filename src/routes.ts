@@ -2,6 +2,27 @@ import Stripe from 'stripe';
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { stripe } from './lib/stripe';
 
+type Product = {
+	price: string;
+	quantity: number;
+};
+
+const bodySchema = {
+	type: 'array',
+	items: {
+		type: 'object',
+		properties: {
+			price: { type: 'string' },
+			quantity: {
+				type: 'number',
+				minimum: 1,
+			},
+		},
+		required: ['price', 'quantity'],
+	},
+	maxItems: 100,
+};
+
 export async function routes(app: FastifyInstance) {
 	app.get('/', (req: FastifyRequest, res: FastifyReply) => {
 		res.send('Hello world');
@@ -52,6 +73,26 @@ export async function routes(app: FastifyInstance) {
 					currency: price.currency,
 				};
 				res.send(product);
+			} catch (error) {
+				res.code(500).send(error);
+			}
+		}
+	);
+	app.post(
+		'/checkout',
+		{ schema: { body: bodySchema } },
+		async (req: FastifyRequest, res: FastifyReply) => {
+			try {
+				const products = req.body as Product[];
+				const session = await stripe.checkout.sessions.create({
+					line_items: products,
+					mode: 'payment',
+					success_url: process.env.REDIRECT_SUCCESS_URL,
+					cancel_url: process.env.REDIRECT_CANCEL_URL,
+				});
+
+				res.send(session.url);
+				// res.redirect(session.url!, 303);
 			} catch (error) {
 				res.code(500).send(error);
 			}
