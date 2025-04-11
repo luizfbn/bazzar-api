@@ -7,6 +7,7 @@ import {
 } from './controllers/paymentController';
 
 export async function routes(app: FastifyInstance) {
+	app.get('/', async (req, res) => res.redirect('/products'));
 	app.get('/products', getProducts);
 	app.get('/products/:id', getProductById);
 	app.post(
